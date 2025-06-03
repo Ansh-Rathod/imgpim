@@ -10,13 +10,10 @@ import (
 	"github.com/Ansh-Rathod/imgpim/internal/utils"
 )
 
-var output string
-var quality int
-
 var rootCmd = &cobra.Command{
 	Use:   "imgpim [input]",
-	Short: "Compress images using open-source tools",
-	Long:  `imgpim is a CLI tool to compress images (jpg, jpeg, png, gif, heic) using tools like oxipng, gifsicle, mozjpeg, jpegoptim, and libheif.`,
+	Short: "Compress images losslessly using open-source tools",
+	Long:  `imgpim is a CLI tool to compress images (jpg, jpeg, png, gif, heic) losslessly in place using tools like oxipng, gifsicle, mozjpeg, and libheif.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		inputPath := args[0]
@@ -26,7 +23,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		// Check dependencies
-		tools := []string{"oxipng", "gifsicle", "jpegtran", "jpegoptim", "heif-convert"}
+		tools := []string{"oxipng", "gifsicle", "jpegtran", "heif-convert"}
 		if missing := utils.CheckDependencies(tools); len(missing) > 0 {
 			fmt.Printf("Error: Missing dependencies: %v\n", missing)
 			fmt.Println("Please install them using Homebrew or your package manager.")
@@ -40,7 +37,7 @@ var rootCmd = &cobra.Command{
 					return err
 				}
 				if !info.IsDir() && utils.IsSupportedImage(path) {
-					compressor.CompressImage(path, output, quality)
+					compressor.CompressImage(path)
 				}
 				return nil
 			})
@@ -50,7 +47,7 @@ var rootCmd = &cobra.Command{
 			}
 		} else {
 			if utils.IsSupportedImage(inputPath) {
-				compressor.CompressImage(inputPath, output, quality)
+				compressor.CompressImage(inputPath)
 			} else {
 				fmt.Printf("Skipping %s: Unsupported format\n", inputPath)
 			}
@@ -59,8 +56,6 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	rootCmd.Flags().StringVarP(&output, "output", "o", "", "Output directory or file path")
-	rootCmd.Flags().IntVarP(&quality, "quality", "q", 85, "Compression quality (1-100, default 85)")
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
